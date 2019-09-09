@@ -1,7 +1,7 @@
 /* event grabber
- * usage: grabber <event> <blocking (0 or 1)>
+ * usage: grabber <event> [blocking (0 or 1)]
  * examples:
- *   $ grabber /dev/input/event5 0  # grab events from event5 device in non-blocking mode
+ *   $ grabber /dev/input/event5    # grab events from event5 device in non-blocking mode
  *   $ grabber /dev/input/event5 1  # same in blocking mode
 */
 
@@ -25,15 +25,15 @@ static void freeres();
 static void sighandler(int);
 static int catchsigs(void);
 
-int fd = -1;
+int fd = -1, excl = 0;
 char *buf = NULL, *ebuf = NULL;
 
 #define ARGERR   "1"
 #define SIGERR   "2"
 #define OPENERR  "3"
-#define NAMEERR  "4"
-#define EXACCERR "5"
-#define MEMERR   "6"
+#define MEMERR   "4"
+#define NAMEERR  "5"
+#define EXACCERR "6"
 #define CORERR   "7"
 #define ESCERR   "8"
 
@@ -41,7 +41,8 @@ void freeres() {
 	free(buf);
 	free(ebuf);
 	if (fd != -1) {
-		ioctl(fd, EVIOCGRAB, 0);
+		if (excl)
+			ioctl(fd, EVIOCGRAB, 0);
 		close(fd);
 	}
 }
@@ -92,55 +93,56 @@ int main(int argc, char* argv[]) {
 	struct input_event ev1, ev2;
 
 	if (argc < 2) {
-		// Event device should be specified
 		printf("\\"ARGERR"\n");
+		printf("event device not specified\n");
 		exit(1);
 	}
 
 	if (catchsigs() == -1) {
-		// Failed to set signal handler
 		printf("\\"SIGERR"\n");
+		printf("failed to set signal handler: %s\n", strerror(errno));
 		exit(1);
 	}
 
 	fd = open(argv[1], O_RDONLY);
 	if (fd == -1) {
-		// Failed to open event device
 		printf("\\"OPENERR"\n");
-		printf("%s\n", strerror(errno));
+		printf("failed to open event device: %s\n", strerror(errno));
+		exit(1);
+	}
+
+	buf = malloc(BUFSIZE);
+	if (!buf) {
+		printf("\\"MEMERR"\n");
+		printf("failed to allocate buffer memory\n");
+		freeres();
 		exit(1);
 	}
 
 	if (ioctl(fd, EVIOCGNAME(sizeof(devname)), devname) == -1) {
-		// Failed to read device name
 		printf("\\"NAMEERR"\n");
-		printf("%s\n", strerror(errno));
+		printf("failed to read device name: %s\n", strerror(errno));
 	} else {
 		printf("\\NAME\n");
 		printf("%s\n", devname);
 	}
 
-	if (ioctl(fd, EVIOCGRAB, 1) == -1) {
-		// Failed to get exclusive access
-		printf("\\"EXACCERR"\n");
-		printf("%s\n", strerror(errno));
-	} else
-		printf("\\ACCESS\n");
-	
-	buf = malloc(BUFSIZE);
-	if (!buf) {
-		// Failed to allocate memory
-		printf("\\"MEMERR"\n");
-		freeres();
-		exit(1);
+	if (argc > 2 && argv[2][0] == '1') {
+		// Exclusive mode
+		excl = 1;
+		if (ioctl(fd, EVIOCGRAB, 1) == -1) {
+			printf("\\"EXACCERR"\n");
+			printf("failed to get exclusive access: %s\n", strerror(errno));
+		} else
+			printf("\\ACCESS\n");
 	}
-
+	
 	// Main loop
 	while (1) {
 		rs = read(fd, buf, BUFSIZE);
 		if (rs < EVENTSIZE) {
-			// Corrupt data
 			printf("\\"CORERR"\n");
+			printf("fead corrupt data\n");
 			freeres();
 			exit(1);
 		}
@@ -153,8 +155,8 @@ int main(int argc, char* argv[]) {
 		}
 		// Raw data
 		if (escape(buf, rs, &ebuf, &ebs) == -1) {
-			// Failed to escape data
 			printf("\\"ESCERR"\n");
+			printf("failed to escape data\n");
 			freeres();
 			exit(1);
 		}

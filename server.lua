@@ -22,6 +22,26 @@ if fork then
 	end
 end
 
+-- start grabbers
+local kbg = io.popen("./grabber " .. kb_event, "r")
+local resp = kbg:read("*l")
+local msg = kbg:read("*l")
+if resp == "\\NAME" then
+	-- started OK
+	if debug then print(string.format("device %s (%s) opened for reading", kb_event, msg)) end
+else
+	if resp ~= "\\5" or debug then
+		print(string.format("error occured while starting grabber for %s device", kb_event))
+		print(msg)
+	end
+	if resp ~= "\\5" then
+		kbg:close()
+		os.exit(1)
+	end
+	-- started OK, but can't read device name
+	if debug then print(string.format("device %s (Unknown) opened for reading", kb_event)) end
+end
+
 -- start server
 local server, em = socket.bind("*", port)
 if not server then
@@ -34,7 +54,7 @@ local clients = {}
 local peers = {}
 
 -- main loop
-local c, pip, pport, sslc, hsres, clip, r, _, to
+local c, pip, pport, sslc, hsres
 while 1 do
 	c = server:accept()
 	if not c then goto examine end
@@ -84,43 +104,5 @@ while 1 do
 
 	-- examine events
 	::examine::
-	r, _, to = socket.select(clients, nil, connto)
-	if to then goto checkcb end
-
-	-- receive from first alive
-	for _, rc in ipairs(r) do
-		clip, em = common.receiveclip(rc)
-		if not clip and em == "closed" then
-			-- disconnect client
-			rc:close()
-			goto continue
-		end
-
-		if clip then
-			if debug then print(dpre .. "received clipboard: " .. clip) end
-			-- set clipboard
-			clipsave = clip
-			f = io.popen("xsel -i " .. sel, "w")
-			f:write(clip)
-			f:close()
-			-- spread new clipboard value
-			spread(clip, clients, peers)
-			break
-		end
-
-		::continue::
-	end
-
-	-- check local clipboard
-	::checkcb::
-	f = io.popen("xsel -o " .. sel, "r")
-	clip = f:read("*a")
-	f:close()
-	if clip ~= "" and clip ~= clipsave then
-		if debug then print(dpre .. "clipboard changed locally: " .. clip) end
-		clipsave = clip
-		spread(clip, clients, peers)
-	end
-
 	socket.sleep(loopto)
 end
