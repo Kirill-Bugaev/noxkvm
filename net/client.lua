@@ -1,5 +1,5 @@
 --[[
-     net client implementation
+     network client implementation
 ]]
 
 local socket = require "socket"
@@ -59,26 +59,35 @@ end
 
 -- API
 
+function CLIENT:select()
+	local r, _, to = socket.select({self.socket}, nil, self.connto)
+	if not to and r[1] then
+		return true
+	else
+		return nil
+	end
+end
+
 function CLIENT:receive()
 	local out = ""
 	while 1 do
 		local data, em = self.socket:receive("*l")
-		if not data or (out == "" and data ~= "* RAW" and data ~= "* PING") then
-			if data then
-				em = "protocol"
-			end
+		if not data then
 			return nil, em
-		elseif data == "* PING" then
-			self.socket:send("* PONG\n")
-			if out == "" then
-				return ""
-			end
 		elseif data == "*" then
 			return out
 		else
 			out = out .. "\n" .. data:sub(2)
 		end
 	end
+end
+
+function CLIENT.sleep(t)
+	socket.sleep(t)
+end
+
+function CLIENT:close()
+	self.socket:close()
 end
 
 return setmetatable(CLIENT, {__call = function(_, ...) return CLIENT.new(...) end})

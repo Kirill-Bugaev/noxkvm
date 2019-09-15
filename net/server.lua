@@ -1,5 +1,5 @@
 --[[
-     net server implementation
+     network server implementation
 ]]
 
 local socket = require "socket"
@@ -60,7 +60,7 @@ function SERVER:accept()
 	-- accept new connection
 	local sock, em = self.socket:accept()
 	if not sock then
-		return nil, "can't accept connections: " .. em
+		return nil, em
 	end
 	local ip, port = sock:getpeername()
 
@@ -93,6 +93,7 @@ function SERVER:accept()
 	client.port   = port
 	client.socket = sock
 	client.connto = self.connto
+
 	local proxy = {}
 	proxy[cindex] = client
 	setmetatable(proxy, client_meta)
@@ -100,18 +101,78 @@ function SERVER:accept()
 	return proxy
 end
 
-function CLIENT:ping()
-	self.socket:send("* PING\n")
-	local timestamp = socket.gettime()
-	local data, em = self.socket:receive("*l")
-	if not data or data ~= "* PONG" then
-		if data and data ~= "* PONG" then
-			em = "protocol"
+function SERVER:examine(hosts)
+	local res = false
+	for _,h in pairs(hosts) do
+		for i,c in pairs(self.clients) do
+			if c.ip == h then
+				if c:examine() then
+					res = true
+				else
+					c:close()
+					self.clients[i] = nil
+				end
+			end
 		end
-		return nil, em
-	else
-		return socket.gettime() - timestamp
 	end
+	-- clean nils in clients array
+	local c = #(self.clients)
+	local i = 1
+	while i <= c do
+		if self.clients[i] == nil then
+			table.remove(self.clients, i)
+			c = c - 1
+		else
+			i = i + 1
+		end
+	end
+	return res
+end
+
+function SERVER:broadcast(hosts, data)
+	local res = false
+	for _,h in pairs(hosts) do
+		for _,c in pairs(self.clients) do
+			if c.ip == h then
+				if c:send(data) then
+					res = true
+				end
+			end
+		end
+	end
+	return res
+end
+
+function SERVER:close()
+	for _,c in pairs(self.clients) do
+		c:close()
+	end
+	self.clients = {}
+	self.socket:close()
+end
+
+function CLIENT:send(data)
+	data = "#" .. data
+	data = data:gsub("\n", "%1#")
+	data = data .. "\n*\n"
+	return self.socket:send(data)
+end
+
+-- remote client should only receive data not send,
+-- so try to catch closed on receive
+function CLIENT:examine()
+	local res = true
+	self.socket:settimeout(0)
+	local _, em = self.socket:receive("*l")
+	if em == "closed" then
+		res = false
+	end
+	self.socket:settimeout(self.connto)
+	return res
+end
+
+function CLIENT:close()
+	self.socket:close()
 end
 
 return setmetatable(SERVER, {__call = function(_, ...) return SERVER.new(...) end})

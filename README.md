@@ -2,6 +2,9 @@
 
 This project under development.
 
+# Mem
+* write connto for IPC
+
 # Sever
 ## Parent
 1. Fork to background
@@ -55,4 +58,13 @@ This project under development.
 		if (response == die) then
 			Die
 7. Go to 3	
-			
+
+# How to start Child 1 and parent-child communication
+Child: 
+Parent:
+* make fork and get switch-codes from child in Main Loop
+* when get switch-code:
+	1. check if client bound to this code is connected
+	2. if client connected then ping this client
+	3. if client pongs then send kill to child and starts Child 2
+	4. if client in down send continue to child
