@@ -77,7 +77,10 @@ function CLIENT:receive()
 		elseif data == "*" then
 			return out
 		else
-			out = out .. "\n" .. data:sub(2)
+			if out ~= "" then
+				out = out .. "\n"
+			end
+			out = out .. data:sub(2)
 		end
 	end
 end

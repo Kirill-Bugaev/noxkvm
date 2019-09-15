@@ -153,7 +153,7 @@ end
 
 function CLIENT:send(data)
 	data = "#" .. data
-	data = data:gsub("\n", "%1#")
+	data = data:gsub("[\n\r]", "%1#")
 	data = data .. "\n*\n"
 	return self.socket:send(data)
 end

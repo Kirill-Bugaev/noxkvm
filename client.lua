@@ -83,7 +83,7 @@ while 1 do
 		end
 
 		-- write event
-		print(dpre .. "Server sends: " .. data)
+		flooder:write(data)
 
 		::receive::
 		flooder.sleep(loopto)
