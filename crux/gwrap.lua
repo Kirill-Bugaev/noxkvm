@@ -89,22 +89,25 @@ function GRABBER:release()
 end
 
 function GRABBER:read()
-	local raw, code, val = grabber.readevent(self.fd, self.eventto)
-	if not raw then
-		return nil, code
+	local ev, em = grabber.readevent(self.fd, self.eventto)
+	if not ev then
+		return nil, em
 	end
 
-	if val == 1 then
-		table.insert(self.keychain, code)
-	elseif val == 0 then
-		for k, v in pairs(self.keychain) do
-			if v == code then
-				table.remove(self.keychain, k)
+	if ev.type == 1 then
+		if ev.value == 1 then
+			table.insert(self.keychain, ev.code)
+		elseif ev.value == 0 then
+			for k, v in pairs(self.keychain) do
+				if v == ev.code then
+					table.remove(self.keychain, k)
+					break
+				end
 			end
 		end
 	end
 
-	return raw, self.keychain
+	return ev, self.keychain
 end
 
 function GRABBER:close()

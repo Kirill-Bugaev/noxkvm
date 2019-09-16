@@ -37,7 +37,7 @@ binds["everybody"]   = {                                           -- this key b
 }                                                                  -- "Super" (code 125) + "Esc" (code 1)
 
 -- misc
-local loopto         = 0.01                 -- main loop timeout (sec), if slows down make it smaller
+local loopto         = 0.003                -- main loop timeout (sec), if mouse slows make it smaller
 local forktobg       = false                -- fork to background after start
 local debug          = true                 -- debug (verbose) mode
 

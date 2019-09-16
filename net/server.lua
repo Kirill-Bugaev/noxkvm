@@ -101,20 +101,19 @@ function SERVER:accept()
 	return proxy
 end
 
-function SERVER:examine(hosts)
-	local res = false
-	for _,h in pairs(hosts) do
-		for i,c in pairs(self.clients) do
-			if c.ip == h then
-				if c:examine() then
-					res = true
-				else
-					c:close()
-					self.clients[i] = nil
-				end
-			end
+-- return list of clients that closed connection
+function SERVER:getclosed()
+	local closed = {}
+
+	-- examine clients
+	for i,c in pairs(self.clients) do
+		if not c:examine() then
+			c:close()
+			table.insert(closed, c.ip .. ":" .. c.port)
+			self.clients[i] = nil
 		end
 	end
+
 	-- clean nils in clients array
 	local c = #(self.clients)
 	local i = 1
@@ -126,21 +125,38 @@ function SERVER:examine(hosts)
 			i = i + 1
 		end
 	end
-	return res
+
+	return closed
 end
 
-function SERVER:broadcast(hosts, data)
-	local res = false
+-- return true if at least on host in list is active
+function SERVER:isactive(hosts)
+	local active = false
 	for _,h in pairs(hosts) do
 		for _,c in pairs(self.clients) do
 			if c.ip == h then
-				if c:send(data) then
-					res = true
+				active = true
+				break
+			end
+		end
+		if active then break end
+	end
+	return active
+end
+
+-- return list of active clients
+function SERVER:broadcast(hosts, event)
+	local active = {}
+	for _,h in pairs(hosts) do
+		for _,c in pairs(self.clients) do
+			if c.ip == h then
+				if c:send(event) then
+					table.insert(active, c.ip .. ":" .. c.port)
 				end
 			end
 		end
 	end
-	return res
+	return active
 end
 
 function SERVER:close()
@@ -151,11 +167,11 @@ function SERVER:close()
 	self.socket:close()
 end
 
-function CLIENT:send(data)
-	data = "#" .. data
-	data = data:gsub("[\n\r]", "%1#")
-	data = data .. "\n*\n"
-	return self.socket:send(data)
+function CLIENT:send(event)
+	local packet = tostring(event.type) .. "\n"
+	packet = packet .. tostring(event.code) .. "\n"
+	packet = packet .. tostring(event.value) .. "\n"
+	return self.socket:send(packet)
 end
 
 -- remote client should only receive data not send,

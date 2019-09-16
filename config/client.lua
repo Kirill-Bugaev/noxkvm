@@ -21,14 +21,6 @@ local tls_params     = {
 }
 local hsto           = 5                    -- tls handshake timeout (sec)
 
---events
-local uinput         = "/dev/uinput"        -- make sure that uinput kernel module is loaded: `lsmod | grep uinput`
-                                            -- if not you should load it
-                                            -- (see https://wiki.archlinux.org/index.php/Kernel_module)
-local eventto        = nil                  -- events writing timeout (sec), nil value blocks indefinitely,
-                                            -- this is normal behaviour for client, it's hard to imagine that you
-                                            -- need to set other value, anyway very small values cause events lost
-
 -- misc
 local loopto         = 0                    -- receive loop timeout (sec), if connto set nil then zero value is optimal,
                                             -- otherwise you should set small non-zero value (0.01 eg.), note that
@@ -37,7 +29,7 @@ local forktobg       = false                -- fork to background after start
 local debug          = true                 -- debug (verbose) mode
 
 local function factory()
-	return host, port, reconnto, connto, ssl, tls_params, hsto, uinput, eventto, loopto, forktobg, debug
+	return host, port, reconnto, connto, ssl, tls_params, hsto, loopto, forktobg, debug
 end
 
 return factory

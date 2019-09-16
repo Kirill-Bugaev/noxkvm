@@ -4,8 +4,7 @@ local common  = require "common"
 local flooder = require "crux.fwrap"
 local client  = require "net.client"
 
-local host, port, reconnto, connto, ssl, tls_params, hsto, uinput, eventto, loopto, fork, debug = require "config.client"()
-local dpre = ""
+local host, port, reconnto, connto, ssl, tls_params, hsto, loopto, fork, debug = require "config.client"()
 
 -- TLS warning
 if not ssl then common.tlswarn() end
@@ -25,67 +24,71 @@ end
 
 -- start flooder
 local em
-flooder, em = flooder(uinput, eventto)
+flooder, em = flooder()
 if not flooder then
-	print(dpre .. "flooder failed")
-	print(dpre .. em)
+	print("virtual device failed")
+	print(em)
 	os.exit(1)
 elseif debug then
-	print(dpre .. "flooder started")
+	print("virtual device started")
 end
 
 -- try to fork
 if fork then
 	local res
 	res, em = common.forktobg()
-	if res then
-		dpre = "noxkvm-client: "
-		if debug then print(dpre .. "forked to background") end
-	else
-		if debug then
-			print(dpre .. "can't fork to background")
-			print(em)
-			print(dpre .. "stay foreground")
-		end
+	if not res then
+		print("can't fork to background")
+		print(em)
+		print("stay foreground")
 	end
 end
 
 -- main loop
-local conn, data
+local conn, event, res
 local fa = true
 while 1 do
 	-- try to connect
 	conn, em = client(host, port, connto, ssl, tls_params, hsto)
 	if not conn then
 		if debug and fa then
-			print(dpre .. em)
+			print(em)
 			fa = false
 		end
 		goto reconn
 	elseif debug then
-		print(string.format(dpre .. "connection established with %s:%d", host, port))
+		print(string.format("connection established with %s:%d", host, port))
 	end
 	fa = true
 
 	-- client loop
 	while 1 do
 		-- receive event
-		conn:select()
-		data, em = conn:receive()
-		if not data then
+		event, em = conn:receive()
+		if event then
+			if debug then print(string.format("got event type=%d,code=%d,value=%d", event.type, event.code, event.value)) end
+		else
 			if em == "closed" then
-				if debug then print(dpre .. "server closed connection") end
+				if debug then print("server closed connection") end
 				goto closeconn
-			elseif em == "timeout" then
-				if debug then print(dpre .. "receiving timeout") end
-				goto receive
+			else
+				if debug then print("receiving timeout") end
+				goto receivenext
 			end
 		end
 
 		-- write event
-		flooder:write(data)
+		res, em = flooder:write(event)
+		if debug then
+			if res then
+				print("event written to virtual device")
+			else
+				print("can't write event to virtual device")
+				print(em)
+			end
+		end
 
-		::receive::
+		::receivenext::
 		flooder.sleep(loopto)
 	end
 

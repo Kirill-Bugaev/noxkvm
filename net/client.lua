@@ -59,30 +59,31 @@ end
 
 -- API
 
-function CLIENT:select()
-	local r, _, to = socket.select({self.socket}, nil, self.connto)
-	if not to and r[1] then
-		return true
-	else
-		return nil
-	end
-end
-
 function CLIENT:receive()
-	local out = ""
-	while 1 do
-		local data, em = self.socket:receive("*l")
-		if not data then
-			return nil, em
-		elseif data == "*" then
-			return out
-		else
-			if out ~= "" then
-				out = out .. "\n"
-			end
-			out = out .. data:sub(2)
-		end
+	local event = {}
+
+	-- type
+	local line, em = self.socket:receive("*l")
+	if not line then
+		return nil, em
 	end
+	event.type = tonumber(line)
+
+	-- code
+	line, em = self.socket:receive("*l")
+	if not line then
+		return nil, em
+	end
+	event.code = tonumber(line)
+
+	-- value
+	line, em = self.socket:receive("*l")
+	if not line then
+		return nil, em
+	end
+	event.value = tonumber(line)
+
+	return event
 end
 
 function CLIENT.sleep(t)

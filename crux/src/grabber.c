@@ -125,14 +125,20 @@ int read_event(lua_State *L) {
 		lua_pushstring(L, "corrupt");
 		return 2;
 	}
-	lua_pushlstring(L, (const char *)&ev, EVSIZE);
 
-	if (ev.type == EV_KEY) {
-		lua_pushinteger(L, ev.code);
-		lua_pushinteger(L, ev.value);
-		return 3;
-	}
-
+	// don't push raw data cause i686 and x86_64 have different size of
+	// struct input_event, push parsed data instead
+	lua_settop(L, 0);  // clear Lua stack
+	lua_createtable(L, 0, 3);
+	lua_pushstring(L, "type");
+	lua_pushinteger(L, ev.type);
+	lua_settable(L, 1);
+	lua_pushstring(L, "code");
+	lua_pushinteger(L, ev.code);
+	lua_settable(L, 1);
+	lua_pushstring(L, "value");
+	lua_pushinteger(L, ev.value);
+	lua_settable(L, 1);
 	return 1;
 }
 

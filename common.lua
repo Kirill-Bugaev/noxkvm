@@ -19,6 +19,9 @@ local function forktobg()
 	if pid ~= 0 then
 		os.exit(0)
 	end
+	io.stdin:close()
+	io.stdout:close()
+	io.stderr:close()
 	return true
 end
 

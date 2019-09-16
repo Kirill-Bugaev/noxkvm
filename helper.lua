@@ -129,11 +129,24 @@ local function switch(binds, keys)
 	return found, isroot
 end
 
+-- convert table to string with ', ' delimiter
+local function ttostr(t)
+	local out = ""
+	for _,v in pairs(t) do
+		if out ~= "" then
+			out = out .. ", "
+		end
+		out = out .. tostring(v)
+	end
+	return out
+end
+
 return {
 	tlength    = tlength,
 	findkeys   = findkeys,
 	findhost   = findhost,
 	parsebinds = parsebinds,
 	findroot   = findroot,
-	switch     = switch
+	switch     = switch,
+	ttostr     = ttostr
 }

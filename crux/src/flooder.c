@@ -44,21 +44,31 @@ int luaopen_crux_flooder(lua_State *L) {
 }
 
 int create_device(lua_State *L) {
-	const char *uinp = lua_tostring(L, 1);
 	struct uinput_setup usetup;
 	int i;
 
-	int fd = open(uinp, O_WRONLY | O_NONBLOCK);
+	int fd = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 	if (fd == -1)
 		return failed(L);
 
-	// register keyboard events
+	// register key events
 	if (ioctl(fd, UI_SET_EVBIT, EV_KEY) == -1) {
 		close(fd);
 		return failed(L);
 	}
 	for (i = 0; i < KEY_CNT; i++)
 		if (ioctl(fd, UI_SET_KEYBIT, i) == -1) {
+			close(fd);
+			return failed(L);
+	}
+
+	// register relative events
+	if (ioctl(fd, UI_SET_EVBIT, EV_REL) == -1) {
+		close(fd);
+		return failed(L);
+	}
+	for (i = 0; i < REL_CNT; i++)
+		if (ioctl(fd, UI_SET_RELBIT, i) == -1) {
 			close(fd);
 			return failed(L);
 	}
@@ -86,33 +96,23 @@ int create_device(lua_State *L) {
 
 int write_event(lua_State *L) {
 	int fd = lua_tointeger(L, 1);
-	size_t evlen = 0;
-	const char *ev = lua_tolstring(L, 2, &evlen);
-	if (evlen != EVSIZE) {
-		lua_pushnil(L);
-		lua_pushstring(L, "wrong event size");
-		return 2;
-	}
-	struct pollfd pfd;
-	int to;  // poll() timeout (seconds)
-	if (lua_isnoneornil(L, 3))
-		to = -1;
-	else
-		to = round(lua_tonumber(L, 3) * 1000);
-	int ret;
 
-	pfd.fd = fd;
-	pfd.events = POLLOUT;
-	ret = poll(&pfd, 1, to);
-	if (ret == -1)
-		return failed(L);
-	else if (ret == 0) {
-		lua_pushnil(L);
-		lua_pushstring(L, "timeout");
-		return 2;
-	}
+	// get event entries
+	struct input_event ev;
+	lua_pushstring(L, "type");
+	lua_gettable(L, 2);
+	ev.type = lua_tointeger(L, lua_gettop(L));
+	lua_pushstring(L, "code");
+	lua_gettable(L, 2);
+	ev.code = lua_tointeger(L, lua_gettop(L));
+	lua_pushstring(L, "value");
+	lua_gettable(L, 2);
+	ev.value = lua_tointeger(L, lua_gettop(L));
+	// timestamp values below are ignored
+	ev.time.tv_sec = 0;
+	ev.time.tv_usec = 0;
 
-	if (write(fd, ev, EVSIZE) == -1)
+	if (write(fd, &ev, EVSIZE) == -1)
 		return failed(L);
 
 	lua_pushboolean(L, 1);
