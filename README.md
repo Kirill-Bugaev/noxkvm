@@ -2,8 +2,8 @@
 
 This project under development.
 
-Keyboard handler already finished.
+Basic function ready.
 
-# TODO
+# todo
 	* write signal handler on C
 	* write autodetect for event devices
