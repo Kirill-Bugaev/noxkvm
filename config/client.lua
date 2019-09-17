@@ -25,8 +25,8 @@ local hsto           = 5                    -- tls handshake timeout (sec)
 local loopto         = 0                    -- receive loop timeout (sec), if connto set nil then zero value is optimal,
                                             -- otherwise you should set small non-zero value (0.01 eg.), note that
                                             -- big values cause events lost
-local forktobg       = false                -- fork to background after start
-local debug          = true                 -- debug (verbose) mode
+local forktobg       = false                -- fork to background after start, you need lua-posix for this
+local debug          = false                -- debug (verbose) mode
 
 local function factory()
 	return host, port, reconnto, connto, ssl, tls_params, hsto, loopto, forktobg, debug
