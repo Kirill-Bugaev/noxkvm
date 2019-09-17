@@ -4,7 +4,7 @@ Low-level KVM for Linux. It lets you share keyboard and mouse between multiple c
 It is written on Lua and C, and it is hardcore because reads and writes events directly
 from and to Linux input devices.
 
-[lua-socket][] should be installed on every system where noxkvm will be used. Superuser (root)
+[lua-socket][] should be installed on every system where program will be used. Superuser (root)
 privileges require for work with input devices. You start noxkvm-server on machine which devices
 you want to share, and noxkvm-client on other machines which will get access to shared devices.
 Configuration files for both server and client placed in `./config` directory.
