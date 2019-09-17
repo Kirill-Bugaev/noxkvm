@@ -8,7 +8,6 @@ local function fixdir()
 		return false
 	end
 	local s = debug.getinfo(1,"S").source:sub(2)
-	print(s)
 	local f = io.open(s, "r")
 	if not f then
 		return false
