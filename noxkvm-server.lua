@@ -1,11 +1,36 @@
 #!/usr/bin/env lua
 
+-- change current directory to directory of script location
+local function fixdir()
+	local lfs
+	pcall(function () lfs = require "lfs" end)
+	if not lfs then
+		return false
+	end
+	local s = debug.getinfo(1,"S").source:sub(2)
+	print(s)
+	local f = io.open(s, "r")
+	if not f then
+		return false
+	end
+	f:close()
+	s = s:match("(.*/)")
+	if s and not lfs.chdir(s) then
+		return false
+	end
+	return true
+end
+if not fixdir() then
+	print("can't change working directory")
+	print("you should change working directory to directory where script placed before start it")
+end
+
 local common  = require "common"
 local helper  = require "helper"
-local grabber = require "crux.gwrap"
+local grabber = require "grabber"
 local server  = require "net.server"
 
-local port, connto, ssl, tls_params, hsto, kb_dev, mouse_dev, eventto, binds, loopto, fork, debug
+local port, connto, ssl, tls_params, hsto, detect, kb_dev, mouse_dev, eventto, binds, loopto, fork, debug
 	= require "config.server"()
 
 -- TLS warning
@@ -23,6 +48,24 @@ if not root then
 	print("root key binding not specified")
 	print("check config")
 	os.exit(1)
+end
+
+-- try to detect handlers
+if detect then
+	local han = helper.gethandler("-event-kbd")
+	if han then
+		if debug then print("detected keyboard handler: " .. han) end
+		kb_dev = han
+	else
+		if debug then print("keyboard handler not detected, use default: " .. kb_dev) end
+	end
+	han = helper.gethandler("-event-mouse")
+	if han then
+		if debug then print("detected mouse handler: " .. han) end
+		mouse_dev = han
+	else
+		if debug then print("mouse handler not detected, use default: " .. mouse_dev) end
+	end
 end
 
 -- start keyboard grabber
@@ -66,6 +109,22 @@ if fork then
 		print(em)
 		print("stay foreground")
 	end
+end
+
+-- try to catch term signals
+local function sighandler()
+	if mouse then
+		mouse:close()
+	end
+	keyboard:close()
+	server:close()
+	os.exit(0)
+end
+local res
+res, em = common.catchsigs(sighandler)
+if not res and debug then
+	print("kill signals will not be caught")
+	print(em)
 end
 
 -- main loop

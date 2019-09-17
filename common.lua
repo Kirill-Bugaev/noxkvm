@@ -6,11 +6,12 @@ local function tlswarn()
 end
 
 local function forktobg()
-	local fork
-	local _, em = pcall(function () fork = require "posix".unistd.fork end)
-	if not fork then
+	local unistd
+	local _, em = pcall(function () unistd = require "posix".unistd end)
+	if not unistd then
 		return false, em
 	end
+	local fork = unistd.fork
 	local pid
 	pid, em = fork()
 	if not pid then
@@ -19,10 +20,24 @@ local function forktobg()
 	if pid ~= 0 then
 		os.exit(0)
 	end
-	io.stdin:close()
-	io.stdout:close()
-	io.stderr:close()
+	local close = unistd.close
+	close(0)
+	close(1)
+	close(2)
 	return true
 end
 
-return {tlswarn = tlswarn, forktobg = forktobg}
+local function catchsigs(handler)
+	local signal
+	local _, em = pcall(function () signal = require "posix.signal" end)
+	if not signal then
+		return false, em
+	end
+	signal.signal(signal.SIGINT, handler)
+	signal.signal(signal.SIGTERM, handler)
+	signal.signal(signal.SIGHUP, handler)
+	signal.signal(signal.SIGPIPE, handler)
+	return true
+end
+
+return {tlswarn = tlswarn, forktobg = forktobg, catchsigs = catchsigs}

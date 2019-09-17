@@ -2,7 +2,7 @@
      event flooder wrapper
 ]]
 
-local flooder = require "crux.flooder"
+local flooder = require "lib.flooder"
 
 local FLOODER = {}  -- this table for methods only (it is shared between all instances of client)
 

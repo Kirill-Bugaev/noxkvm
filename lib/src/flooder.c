@@ -38,7 +38,7 @@ int luaopen_flooder(lua_State *L) {
 	return 1;
 }
 
-int luaopen_crux_flooder(lua_State *L) {
+int luaopen_lib_flooder(lua_State *L) {
 	luaL_newlib(L, flooder_lib);
 	return 1;
 }

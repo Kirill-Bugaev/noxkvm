@@ -1,10 +1,36 @@
 #!/usr/bin/env lua
 
+-- change current directory to directory of script location
+local function fixdir()
+	local lfs
+	pcall(function () lfs = require "lfs" end)
+	if not lfs then
+		return false
+	end
+	local s = debug.getinfo(1,"S").source:sub(2)
+	print(s)
+	local f = io.open(s, "r")
+	if not f then
+		return false
+	end
+	f:close()
+	s = s:match("(.*/)")
+	if s and not lfs.chdir(s) then
+		return false
+	end
+	return true
+end
+if not fixdir() then
+	print("can't change working directory")
+	print("you should change working directory to directory where script placed before start it")
+end
+
 local common  = require "common"
-local flooder = require "crux.fwrap"
+local flooder = require "flooder"
 local client  = require "net.client"
 
 local host, port, reconnto, connto, ssl, tls_params, hsto, loopto, fork, debug = require "config.client"()
+local conn
 
 -- TLS warning
 if not ssl then common.tlswarn() end
@@ -44,8 +70,23 @@ if fork then
 	end
 end
 
+-- try to catch term signals
+local function sighandler()
+	if conn then
+		conn:close()
+	end
+	flooder:close()
+	os.exit(0)
+end
+local res
+res, em = common.catchsigs(sighandler)
+if not res and debug then
+	print("kill signals will not be caught")
+	print(em)
+end
+
 -- main loop
-local conn, event, res
+local event
 local fa = true
 while 1 do
 	-- try to connect

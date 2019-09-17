@@ -141,6 +141,30 @@ local function ttostr(t)
 	return out
 end
 
+-- try to find event handler with given suffix
+local function gethandler(suffix)
+	local scan_path = "/dev/input/by-id/"
+	local quotepattern = "(["..("%^$().[]*+-?"):gsub("(.)", "%%%1").."])"
+	local list = io.popen("/bin/ls --format=single-column " .. scan_path, "r")
+
+	local handler
+	local file = ""
+	while file do
+		file = list:read("*l")
+		if file and file:match(suffix:gsub(quotepattern, "%%%1")) then
+			local target = io.popen("readlink -f " .. scan_path .. file)
+			handler = target:read()
+			target:close()
+			if handler then
+				break
+			end
+		end
+	end
+
+	list:close()
+	return handler
+end
+
 return {
 	tlength    = tlength,
 	findkeys   = findkeys,
@@ -148,5 +172,6 @@ return {
 	parsebinds = parsebinds,
 	findroot   = findroot,
 	switch     = switch,
-	ttostr     = ttostr
+	ttostr     = ttostr,
+	gethandler = gethandler
 }

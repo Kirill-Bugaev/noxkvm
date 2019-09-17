@@ -20,6 +20,7 @@ local tls_params     = {
 local hsto           = 5                    -- tls handshake timeout (sec)
 
 -- events
+local autodetect     = true                 -- try to detect keyboard and mouse event handlers
 local kb_dev         = "/dev/input/event16" -- you can find apropriate handlers (events) for your
 local mouse_dev      = "/dev/input/event5"  -- keyboard and mouse using `cat /proc/bus/input/devices`
 local eventto        = 0                    -- events reading timeout
@@ -38,11 +39,11 @@ binds["everybody"]   = {                                           -- this key b
 
 -- misc
 local loopto         = 0.003                -- main loop timeout (sec), if mouse slows make it smaller
-local forktobg       = false                -- fork to background after start
+local forktobg       = false                -- fork to background after start, you need lua-posix for this
 local debug          = true                 -- debug (verbose) mode
 
 local function factory()
-	return port, connto, ssl, tls_params, hsto, kb_dev, mouse_dev, eventto, binds, loopto, forktobg, debug
+	return port, connto, ssl, tls_params, hsto, autodetect, kb_dev, mouse_dev, eventto, binds, loopto, forktobg, debug
 end
 
 return factory

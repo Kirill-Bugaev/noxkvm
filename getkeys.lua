@@ -8,8 +8,32 @@
 		   $ sudo lua getkeys.lua /dev/input/event2
 ]]
 
+-- change current directory to directory of script location
+local function fixdir()
+	local lfs
+	pcall(function () lfs = require "lfs" end)
+	if not lfs then
+		return false
+	end
+	local s = debug.getinfo(1,"S").source:sub(2)
+	print(s)
+	local f = io.open(s, "r")
+	if not f then
+		return false
+	end
+	f:close()
+	s = s:match("(.*/)")
+	if s and not lfs.chdir(s) then
+		return false
+	end
+	return true
+end
+if not fixdir() then
+	print("can't change working directory")
+	print("you should change working directory to directory where script placed before start it")
+end
 
-local grabber = require "crux.grabber"
+local grabber = require "lib.grabber"
 
 if not arg[1] then
 	print("Event device not specified.")
@@ -34,10 +58,11 @@ print(string.format("Device (%s) opened for reading.", name))
 print("Press key")
 
 while 1 do
-	local raw, code, val = grabber.getevent(fd)
-	if not raw then
-		print("Error: " .. code)
-	elseif code and val == 1 then
-		print("Keycode " .. code)
+	local ev
+	ev, em = grabber.readevent(fd)
+	if not ev then
+		print("Error: " .. em)
+	elseif ev.type == 1 and ev.value == 1 then
+		print("Keycode " .. ev.code)
 	end
 end

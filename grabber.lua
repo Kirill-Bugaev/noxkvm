@@ -2,7 +2,7 @@
      event grabber wrapper
 ]]
 
-local grabber = require "crux.grabber"
+local grabber = require "lib.grabber"
 
 local GRABBER = {}     -- this table for methods only (it is shared between all instances of server)
 local gindex = {}  -- grabber private index
@@ -35,7 +35,7 @@ local grabber_meta = {
 function GRABBER.new(dev, eventto)
 	local fd, em = grabber.open(dev)
 	if not fd then
-		return nil, string.format("can't open device %s: %s", dev, em)
+		return nil, string.format("can't open %s: %s", dev, em)
 	end
 
 	local name, _ = grabber.getname(fd)

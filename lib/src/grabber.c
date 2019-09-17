@@ -44,7 +44,7 @@ int luaopen_grabber(lua_State *L) {
 	return 1;
 }
 
-int luaopen_crux_grabber(lua_State *L) {
+int luaopen_lib_grabber(lua_State *L) {
 	luaL_newlib(L, grabber_lib);
 	return 1;
 }
