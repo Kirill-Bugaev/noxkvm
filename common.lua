@@ -31,13 +31,15 @@ local function catchsigs(handler)
 	local signal
 	local _, em = pcall(function () signal = require "posix.signal" end)
 	if not signal then
-		return false, em
+		return nil, em
 	end
 	signal.signal(signal.SIGINT, handler)
 	signal.signal(signal.SIGTERM, handler)
 	signal.signal(signal.SIGHUP, handler)
 	signal.signal(signal.SIGPIPE, handler)
-	return true
+	signal.signal(signal.SIGQUIT, handler)
+	signal.signal(signal.SIGTSTP, handler)
+	return {signal.SIGINT, signal.SIGTERM}
 end
 
 return {tlswarn = tlswarn, forktobg = forktobg, catchsigs = catchsigs}

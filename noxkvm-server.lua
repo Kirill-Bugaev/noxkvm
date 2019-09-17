@@ -111,17 +111,21 @@ if fork then
 end
 
 -- try to catch term signals
-local function sighandler()
-	if mouse then
-		mouse:close()
+local termsigs
+local function sighandler(signo)
+	for _,s in pairs(termsigs) do
+		if s == signo then
+			if mouse then
+				mouse:close()
+			end
+			keyboard:close()
+			server:close()
+			os.exit(0)
+		end
 	end
-	keyboard:close()
-	server:close()
-	os.exit(0)
 end
-local res
-res, em = common.catchsigs(sighandler)
-if not res and debug then
+termsigs, em = common.catchsigs(sighandler)
+if not termsigs and debug then
 	print("kill signals will not be caught")
 	print(em)
 end
