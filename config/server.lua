@@ -20,7 +20,7 @@ local tls_params     = {
 local hsto           = 5                    -- tls handshake timeout (sec)
 
 -- events
-local autodetect     = true                 -- try to detect keyboard and mouse event handlers
+local autodetect     = true                 -- detect keyboard and mouse event handlers on start
 local kb_dev         = "/dev/input/event16" -- you can find apropriate handlers (events) for your
 local mouse_dev      = "/dev/input/event5"  -- keyboard and mouse using `cat /proc/bus/input/devices`
 local eventto        = 0                    -- events reading timeout
@@ -30,7 +30,7 @@ local binds          = {}
 binds["local"]       = {hosts = "root",          keys = 172}  -- root binding should be present anyway,
                                                               -- without it you won't switch devices to use locally
 binds["notebook"]    = {hosts = "192.168.1.79",  keys = 155}  -- you can obtain apropriate keycodes using
-                                                              -- getkeys.lua program (not xev!)
+                                                              -- getkeys.lua script (not xev!)
 binds["netbook"]     = {hosts = "192.168.1.110", keys = 217}
 binds["everybody"]   = {                                           -- this key binding switch on devices for local
 	hosts              = {"root", "192.168.1.79", "192.168.1.110"},  -- and remote hosts simultaneously,
