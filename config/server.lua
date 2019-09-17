@@ -40,7 +40,7 @@ binds["everybody"]   = {                                           -- this key b
 -- misc
 local loopto         = 0.003                -- main loop timeout (sec), if mouse slows make it smaller
 local forktobg       = false                -- fork to background after start, you need lua-posix for this
-local debug          = true                -- debug (verbose) mode
+local debug          = false                -- debug (verbose) mode
 
 local function factory()
 	return port, connto, ssl, tls_params, hsto, autodetect, kb_dev, mouse_dev, eventto, binds, loopto, forktobg, debug
