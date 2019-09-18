@@ -35,8 +35,9 @@ end
 local grabber = require "lib.grabber"
 
 if not arg[1] then
-	print("Event device not specified.")
-	print("Usage: lua getkeys.lua <event_device>")
+	print("Event handler not specified.")
+	print("Usage: lua getkeys.lua <event_handler>")
+	print("You can find appropriate event handlers for keyboard and mouse using `cat /proc/bus/input/devices`")
 	os.exit(1)
 end
 local kb_event = arg[1]
