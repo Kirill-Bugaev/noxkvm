@@ -35,7 +35,7 @@ local function catchsigs(handler)
 	end
 	signal.signal(signal.SIGINT, handler)
 	signal.signal(signal.SIGTERM, handler)
-	signal.signal(signal.SIGHUP, handler)
+--	signal.signal(signal.SIGHUP, handler)
 	signal.signal(signal.SIGPIPE, handler)
 	signal.signal(signal.SIGQUIT, handler)
 	signal.signal(signal.SIGTSTP, handler)

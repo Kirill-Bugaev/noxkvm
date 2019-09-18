@@ -62,7 +62,7 @@ device. Run `getkeys.lua` again specifying found handler
 $ sudo ./getkeys.lua /dev/input/event16
 ```
 Now you can press keys and get corresponding key codes. If you are planing to use key
-combinations, ALT+1 eg., for switching keyboard and mouse devices between computers,
+combinations, ALT+1 eg., for switching keyboard and mouse between computers,
 you should first press ALT key and get its key code (56), then press 1 and get its
 key code(2), but not (!) both keys simultaneously.
 
@@ -74,15 +74,14 @@ binds["notebook"]    = {hosts = "192.168.1.79",  keys = {56, 3}}
 ```
 In example above I bound ALT+1 to local machine and ALT+2 to my notebook. Note that
 entry with single `hosts = "root"` should always be present in config, without it
-you couldn't switch keyboard and mouse devices to local machine back.
+you couldn't switch keyboard and mouse to local machine back.
 
 That is. You can specify as many key bindings as you want. You can even specify same keys
 for multiple machines (hosts). In this case keyboard and mouse will work on all hosts
 simultaneously. Just funny feature :).
 
 One more thing. If `getkeys.lua` has detected your keyboard and mouse wrong automatically,
-specify device handlers found with `cat /proc/bus/input/devices` in `./config/server.lua`
-and switch off autodetect
+specify device handlers found with `cat /proc/bus/input/devices` and switch off autodetect
 ```lua
 local autodetect     = false
 local kb_dev         = "/dev/input/event16"
@@ -124,6 +123,13 @@ Install [lua-sec][], create PKI (see ArchWiki [Easy-RSA][]) and move keys and ce
 `./certs` directory (there are mine by default, replace it).
 
 ## issues
+### client and server don't stop on i686 architecture
+I suspect that it is bug in lua-posix library. Switch off signals catch in `noxkvm-server.lua`
+and `noxkvm-client.lua`
+```lua
+-- termsigs, em = common.catchsigs(sighandler)
+```
+### other
 If you have any, [welcome][New issues].
 
 [lua-socket]: https://www.archlinux.org/packages/community/x86_64/lua-socket/
