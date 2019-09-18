@@ -9,6 +9,7 @@ Program doesn't work out of box:
 * low-level libs should be built for your architecture
 * server key bindings should be configured appropriate way
 * superuser (root) privileges require for work with input devices
+
 Then start `noxkvm-server` on machine which devices you want to share, and `noxkvm-client`
 on other machines which will get access to shared devices. Configuration files for both
 server and client placed in `./config` directory.
@@ -23,7 +24,7 @@ $ make install
 ```
 `grabber.so` and `flooder.so` should appear in `./lib` directory. If not something goes
 wrong. Maybe Lua isn't installed on your system. If you are sure that your system is OK
-write [welcome][issue].
+write [issue][New issues].
 
 ## noxkvm-server
 ### key bindings
@@ -54,7 +55,7 @@ B: ABS=100000000
 B: MSC=10
 B: LED=1f
 ```
-We are interested in `Handlers=sysrq kbd event16 leds` entry, more precisely in `event16`.
+We are interesting in `Handlers=sysrq kbd event16 leds` entry, more precisely in `event16`.
 It is keyboard handler (on your system it is possibly different) which we will use as input
 device. Run `getkeys.lua` again specifying found handler
 ```shell
