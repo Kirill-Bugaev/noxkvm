@@ -49,8 +49,8 @@ if not root then
 	os.exit(1)
 end
 
--- try to detect handlers
 if detect then
+	-- try to detect handlers
 	local han = helper.gethandler("-event-kbd")
 	if han then
 		if debug then print("detected keyboard handler: " .. han) end
