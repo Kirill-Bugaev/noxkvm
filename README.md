@@ -4,10 +4,10 @@ Low-level KVM for Linux. It lets you share keyboard and mouse between multiple c
 It is written on Lua and C, and it is hardcore because reads and writes events directly
 from and to Linux input devices.
 
-Program doesn't works out of box:
+Program doesn't work out of box:
 * [lua-socket][] should be installed on every system where program will be used
-* [low-level libs][] should be built for your architecture
-* server [key bindings][] should be configured appropriate way
+* low-level libs should be built for your architecture
+* server key bindings should be configured appropriate way
 * superuser (root) privileges require for work with input devices
 Then start `noxkvm-server` on machine which devices you want to share, and `noxkvm-client`
 on other machines which will get access to shared devices. Configuration files for both
@@ -126,8 +126,6 @@ Install [lua-sec][], create PKI (see ArchWiki [Easy-RSA][]) and move keys and ce
 If you have any, [welcome][New issues].
 
 [lua-socket]: https://www.archlinux.org/packages/community/x86_64/lua-socket/
-[low-level libs]: #building libs
-[key bindings]: #key bindings
 [lua-sec]: https://www.archlinux.org/packages/community/x86_64/lua-sec/
 [Easy-RSA]: https://wiki.archlinux.org/index.php/Easy-RSA
 [New issues]: https://github.com/Kirill-Bugaev/noxkvm/issues/new
