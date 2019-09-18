@@ -41,4 +41,4 @@ If you have any, [welcome][New issues].
 [lua-socket]: https://www.archlinux.org/packages/community/x86_64/lua-socket/
 [lua-sec]: https://www.archlinux.org/packages/community/x86_64/lua-sec/
 [Easy-RSA]: https://wiki.archlinux.org/index.php/Easy-RSA
-[New issues]: https://github.com/Kirill-Bugaev/clipnetsync/issues/new
+[New issues]: https://github.com/Kirill-Bugaev/noxkvm/issues/new
